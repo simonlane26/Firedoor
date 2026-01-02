@@ -1,0 +1,21 @@
+{
+  "name": "DoorCompliance.co.uk - Fire Door Inspection Management",
+  "short_name": "DoorCompliance",
+  "description": "Professional fire door inspection management system compliant with Fire Safety (England) Regulations 2022",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-GB",
+  "dir": "ltr"
+}

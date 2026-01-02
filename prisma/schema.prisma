@@ -1,0 +1,575 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                String    @id @default(cuid())
+  companyName       String
+  subdomain         String    @unique
+
+  // Branding
+  logoUrl           String?
+  faviconUrl        String?
+  primaryColor      String    @default("#dc2626")
+  secondaryColor    String    @default("#991b1b")
+  accentColor       String    @default("#f59e0b")
+  textColor         String    @default("#1f2937")
+  backgroundColor   String    @default("#ffffff")
+  brandingEnabled   Boolean   @default(true)
+  customCss         String?
+
+  // Contact
+  contactEmail      String?
+  contactPhone      String?
+  websiteUrl        String?
+  address           String?
+
+  // Subscription
+  subscriptionPlan  String    @default("trial")
+  subscriptionStatus String   @default("active")
+  maxDoors          Int       @default(1000)
+  maxBuildings      Int       @default(50)
+  maxUsers          Int       @default(10)
+  maxInspectors     Int       @default(5)
+
+  // Billing Configuration
+  billingModel      String    @default("PER_DOOR")  // PER_DOOR, PER_BUILDING, PER_INSPECTOR
+  clientType        String    @default("HOUSING_ASSOCIATION")  // HOUSING_ASSOCIATION, CONTRACTOR
+  pricePerDoor      Float     @default(12.00)
+  pricePerInspector Float     @default(65.00)
+  pricePerBuilding  Float     @default(500.00)
+  billingCycle      String    @default("ANNUAL")  // MONTHLY, ANNUAL
+  nextBillingDate   DateTime?
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  users             User[]
+  buildings         Building[]
+  fireDoors         FireDoor[]
+  inspections       Inspection[]
+  evidenceRecords   EvidenceRecord[]
+  auditTrail        AuditTrail[]
+  invoices          Invoice[]
+  usageRecords      UsageRecord[]
+  contractors       Contractor[]
+  defects           Defect[]
+
+  @@map("tenants")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          UserRole  @default(INSPECTOR)
+  isSuperAdmin  Boolean   @default(false)
+  organization  String?
+
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  buildings     Building[]
+  inspections   Inspection[]
+  evidenceRecords EvidenceRecord[]
+  auditTrail    AuditTrail[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  INSPECTOR
+}
+
+model Building {
+  id               String       @id @default(cuid())
+  name             String
+  address          String
+  postcode         String
+  buildingType     BuildingType
+  numberOfStoreys  Int?
+  topStoreyHeight  Float?
+
+  contactName      String?
+  contactEmail     String?
+  contactPhone     String?
+
+  tenantId         String
+  tenant           Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  managerId        String
+  manager          User         @relation(fields: [managerId], references: [id])
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  fireDoors        FireDoor[]
+  safetyProfile    BuildingSafetyProfile?
+
+  @@index([tenantId])
+  @@map("buildings")
+}
+
+enum BuildingType {
+  RESIDENTIAL
+  COMMERCIAL
+  MIXED_USE
+  INDUSTRIAL
+  PUBLIC
+  HMO
+  HOTEL
+  HOSTEL
+  GUEST_HOUSE
+  EDUCATION
+  CHILDCARE
+  HEALTHCARE
+  CARE_FACILITY
+  TRANSPORT
+  SPECIALITY_ACCOMMODATION
+  ENTERTAINMENT
+  COMMUNITY
+}
+
+model FireDoor {
+  id                    String        @id @default(cuid())
+  doorNumber            String
+  location              String
+  doorType              DoorType
+  fireRating            String
+  manufacturer          String?
+  installationDate      DateTime?
+
+  tenantId              String
+  tenant                Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  buildingId            String
+  building              Building      @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  hasIntumescentStrips  Boolean       @default(true)
+  hasSmokeSeal          Boolean       @default(false)
+  hasLetterbox          Boolean       @default(false)
+  hasAirTransferGrille  Boolean       @default(false)
+  hasGlazing            Boolean       @default(false)
+
+  qrCodeUrl             String?
+  nextInspectionDate    DateTime?
+  certificationUrl      String?
+
+  notes                 String?
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  inspections           Inspection[]
+  defects               Defect[]
+
+  @@unique([buildingId, doorNumber])
+  @@index([tenantId])
+  @@map("fire_doors")
+}
+
+enum DoorType {
+  FLAT_ENTRANCE
+  COMMUNAL_STAIRWAY
+  COMMUNAL_CORRIDOR
+  COMMUNAL_LOBBY
+  PLANT_ROOM
+  SERVICE_RISER
+  RISER_CUPBOARD
+  METER_CUPBOARD
+  KITCHEN
+  HALLWAY
+  DINING_AREA
+  OFFICE
+  OTHER
+}
+
+model Inspection {
+  id                        String            @id @default(cuid())
+
+  tenantId                  String
+  tenant                    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  fireDoorId                String
+  fireDoor                  FireDoor          @relation(fields: [fireDoorId], references: [id], onDelete: Cascade)
+
+  inspectorId               String
+  inspector                 User              @relation(fields: [inspectorId], references: [id])
+
+  inspectionDate            DateTime          @default(now())
+  inspectionType            InspectionType
+  nextInspectionDate        DateTime?
+
+  status                    InspectionStatus  @default(PENDING)
+  overallResult             InspectionResult?
+
+  doorConstruction          DoorConstruction?
+  certificationProvided     Boolean?
+
+  damageOrDefects           Boolean           @default(false)
+  damageDescription         String?
+
+  doorLeafFrameOk           Boolean           @default(false)
+
+  doorClosesCompletely      Boolean           @default(false)
+  doorClosesFromAnyAngle    Boolean           @default(false)
+  doorOpensInDirectionOfTravel Boolean        @default(false)
+  frameGapsAcceptable       Boolean           @default(false)
+  maxGapSize                Float?
+
+  hingesSecure              Boolean           @default(false)
+  hingesCEMarked            Boolean?
+  hingesGoodCondition       Boolean?
+  screwsInPlaceAndSecure    Boolean?
+  hingeCount                Int?
+  minimumHingesPresent      Boolean?
+
+  intumescentStripsIntact   Boolean?
+  doorSignageCorrect        Boolean?
+  doorSignageComments       String?
+  smokeSealsIntact          Boolean?
+
+  letterboxClosesProperly   Boolean?
+
+  glazingIntact             Boolean?
+
+  airTransferGrilleIntact   Boolean?
+
+  actionRequired            Boolean           @default(false)
+  actionDescription         String?
+  priority                  ActionPriority?
+
+  accessDenied              Boolean           @default(false)
+  accessDeniedReason        String?
+
+  inspectorNotes            String?
+
+  photoPaths                String?
+
+  completedAt               DateTime?
+
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+
+  defects                   Defect[]
+
+  @@index([tenantId])
+  @@index([fireDoorId])
+  @@index([inspectorId])
+  @@index([inspectionDate])
+  @@map("inspections")
+}
+
+enum InspectionType {
+  THREE_MONTH
+  TWELVE_MONTH
+  AD_HOC
+}
+
+enum InspectionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REQUIRES_ACTION
+}
+
+enum InspectionResult {
+  PASS
+  FAIL
+  REQUIRES_ATTENTION
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DoorConstruction {
+  STEEL
+  WOOD
+  GLASS
+}
+
+model BuildingSafetyProfile {
+  id                    String    @id @default(cuid())
+  buildingId            String    @unique
+  building              Building  @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  riskSummary           String?
+  inspectionPolicy      String?
+  complianceTrend       String?
+  regulatorStatus       String?
+  lastReviewDate        DateTime?
+  nextReviewDate        DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("building_safety_profiles")
+}
+
+model EvidenceRecord {
+  id                    String    @id @default(cuid())
+
+  entityType            String    // 'DOOR', 'BUILDING', 'INSPECTION'
+  entityId              String    // ID of the door/building/inspection
+
+  recordType            String    // 'PHOTO', 'PDF', 'CERTIFICATE', 'REMEDIAL_PROOF', 'MANUFACTURER_DOC'
+  fileUrl               String
+  fileName              String
+  fileSize              Int?
+  mimeType              String?
+
+  description           String?
+  uploadedBy            String
+  uploadedByUser        User      @relation(fields: [uploadedBy], references: [id])
+
+  tenantId              String
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@index([tenantId])
+  @@map("evidence_records")
+}
+
+model AuditTrail {
+  id                    String    @id @default(cuid())
+
+  entityType            String    // 'DOOR', 'BUILDING', 'INSPECTION', 'USER'
+  entityId              String
+
+  action                String    // 'CREATE', 'UPDATE', 'DELETE', 'INSPECT', 'APPROVE', 'REJECT'
+
+  beforeSnapshot        String?   // JSON string
+  afterSnapshot         String?   // JSON string
+
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+
+  tenantId              String
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@index([tenantId])
+  @@index([createdAt])
+  @@map("audit_trail")
+}
+
+model Invoice {
+  id                    String    @id @default(cuid())
+  invoiceNumber         String    @unique
+
+  tenantId              String
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  amount                Float
+  subtotal              Float
+  taxAmount             Float     @default(0)
+  taxRate               Float     @default(0.20)  // 20% VAT
+
+  status                InvoiceStatus @default(DRAFT)
+
+  billingPeriodStart    DateTime
+  billingPeriodEnd      DateTime
+
+  issueDate             DateTime  @default(now())
+  dueDate               DateTime
+  paidDate              DateTime?
+
+  // Usage breakdown stored as JSON
+  items                 String?   // JSON array of line items
+
+  // Stripe payment tracking
+  stripeInvoiceId       String?
+  stripePaymentIntentId String?
+
+  notes                 String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model UsageRecord {
+  id                    String    @id @default(cuid())
+
+  tenantId              String
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  period                DateTime  // Start of the billing period (e.g., 2025-01-01)
+
+  // Usage metrics
+  doorCount             Int       @default(0)
+  buildingCount         Int       @default(0)
+  inspectorCount        Int       @default(0)
+  inspectionCount       Int       @default(0)
+
+  // Calculated amounts
+  calculatedAmount      Float
+
+  // Breakdown stored as JSON
+  usageDetails          String?   // JSON object with detailed breakdown
+
+  invoiced              Boolean   @default(false)
+  invoiceId             String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, period])
+  @@index([tenantId])
+  @@index([period])
+  @@index([invoiced])
+  @@map("usage_records")
+}
+
+model Contractor {
+  id                    String    @id @default(cuid())
+  companyName           String
+  contactName           String
+  email                 String
+  phone                 String
+  address               String?
+  specialties           String?   // JSON array: ["Fire doors", "Hinges", "Seals"]
+
+  // Performance tracking
+  averageCompletionDays Float?
+  completedJobs         Int       @default(0)
+  rating                Float?
+
+  // Status
+  isActive              Boolean   @default(true)
+
+  tenantId              String
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  defects               Defect[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("contractors")
+}
+
+model Defect {
+  id                    String         @id @default(cuid())
+  ticketNumber          String         @unique
+
+  // Related to inspection
+  inspectionId          String
+  inspection            Inspection     @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  doorId                String
+  door                  FireDoor       @relation(fields: [doorId], references: [id], onDelete: Cascade)
+
+  // Defect details
+  severity              DefectSeverity
+  category              String
+  description           String
+  detectedDate          DateTime       @default(now())
+
+  // Assignment
+  assignedContractorId  String?
+  assignedContractor    Contractor?    @relation(fields: [assignedContractorId], references: [id])
+  assignedDate          DateTime?
+  targetCompletionDate  DateTime?
+
+  // Status tracking
+  status                DefectStatus   @default(OPEN)
+  priority              Priority       @default(MEDIUM)
+
+  // Repair completion
+  repairCompletedDate   DateTime?
+  proofOfFixUrls        String?        // JSON array of image URLs
+  repairNotes           String?
+  repairCost            Float?
+
+  // Re-inspection
+  reinspectionRequired  Boolean        @default(true)
+  reinspectionId        String?
+  reinspectedDate       DateTime?
+
+  // Closure
+  closedDate            DateTime?
+  closedById            String?
+  closureNotes          String?
+
+  tenantId              String
+  tenant                Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([status])
+  @@index([severity])
+  @@index([priority])
+  @@index([doorId])
+  @@index([inspectionId])
+  @@index([tenantId])
+  @@index([assignedContractorId])
+  @@map("defects")
+}
+
+enum DefectStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  AWAITING_PARTS
+  REPAIR_COMPLETED
+  REINSPECTION_PASSED
+  CLOSED
+  CANCELLED
+}
+
+enum DefectSeverity {
+  CRITICAL
+  MAJOR
+  MINOR
+}
+
+enum Priority {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+

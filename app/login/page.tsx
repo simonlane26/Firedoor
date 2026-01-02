@@ -50,7 +50,7 @@ export default function LoginPage() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-center">
           <Image
-            src="/ChatGPT Image Dec 30, 2025, 06_29_19 PM-Picsart-BackgroundRemover.png"
+            src="/logo.png"
             alt="DoorCompliance.co.uk Logo"
             width={700}
             height={280}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,7 +36,7 @@ interface Door {
   }>
 }
 
-export default function DoorsPage() {
+function DoorsPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -765,5 +765,13 @@ export default function DoorsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function DoorsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">Loading...</div>}>
+      <DoorsPageContent />
+    </Suspense>
   )
 }

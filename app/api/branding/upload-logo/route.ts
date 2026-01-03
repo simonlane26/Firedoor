@@ -3,9 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserWithTenant } from '@/lib/tenant'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { uploadToS3 } from '@/lib/s3'
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -55,24 +53,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'branding', user.tenant.id)
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
     // Generate filename
     const extension = file.name.split('.').pop()
     const filename = `${type}-${Date.now()}.${extension}`
-    const filepath = join(uploadsDir, filename)
+    const s3Key = `branding/${user.tenant.id}/${filename}`
 
-    // Save file
+    // Upload to S3
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
 
-    // Generate public URL
-    const publicUrl = `/uploads/branding/${user.tenant.id}/${filename}`
+    await uploadToS3(s3Key, buffer, file.type)
+
+    // Generate public URL (S3 bucket URL)
+    const region = process.env.AWS_REGION || 'eu-west-2'
+    const bucketName = process.env.AWS_S3_BUCKET_NAME
+    const publicUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${s3Key}`
 
     // Update tenant with new URL
     const updateData = type === 'logo'

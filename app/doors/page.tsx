@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -39,13 +39,14 @@ interface Door {
 export default function DoorsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [doors, setDoors] = useState<Door[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [buildingFilter, setBuildingFilter] = useState('all')
   const [ratingFilter, setRatingFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all')
   const [sortBy, setSortBy] = useState('building-asc')
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedDoors, setSelectedDoors] = useState<Set<string>>(new Set())

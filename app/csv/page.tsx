@@ -346,9 +346,9 @@ export default function CSVImportExportPage() {
             <div>
               <h3 className="font-semibold mb-2">Building Types</h3>
               <div className="flex flex-wrap gap-2">
-                {['RESIDENTIAL', 'COMMERCIAL', 'MIXED_USE', 'INDUSTRIAL', 'PUBLIC'].map((type) => (
+                {['RESIDENTIAL', 'COMMERCIAL', 'MIXED_USE', 'INDUSTRIAL', 'PUBLIC', 'HMO', 'HOTEL', 'HOSTEL', 'GUEST_HOUSE', 'EDUCATION', 'CHILDCARE', 'HEALTHCARE', 'CARE_FACILITY', 'TRANSPORT', 'SPECIALITY_ACCOMMODATION', 'ENTERTAINMENT', 'COMMUNITY'].map((type) => (
                   <span key={type} className="px-3 py-1 bg-gray-100 rounded-md text-sm">
-                    {type}
+                    {type.replace(/_/g, ' ')}
                   </span>
                 ))}
               </div>
@@ -370,8 +370,15 @@ export default function CSVImportExportPage() {
                   'FLAT_ENTRANCE',
                   'COMMUNAL_STAIRWAY',
                   'COMMUNAL_CORRIDOR',
+                  'COMMUNAL_LOBBY',
+                  'PLANT_ROOM',
+                  'SERVICE_RISER',
                   'RISER_CUPBOARD',
                   'METER_CUPBOARD',
+                  'KITCHEN',
+                  'HALLWAY',
+                  'DINING_AREA',
+                  'OFFICE',
                   'OTHER',
                 ].map((type) => (
                   <span key={type} className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">

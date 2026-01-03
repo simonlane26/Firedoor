@@ -29,6 +29,7 @@ interface FireDoor {
   hasSmokeSeal: boolean
   hasLetterbox: boolean
   hasAirTransferGrille: boolean
+  hasGlazing: boolean
 }
 
 export default function NewInspectionPage() {
@@ -1073,7 +1074,7 @@ export default function NewInspectionPage() {
                         </div>
                       )}
 
-                      {true && (
+                      {selectedDoor.hasGlazing && (
                         <div className="space-y-4 border-t pt-4">
                           <h3 className="font-semibold text-lg">Glazing</h3>
                           <div className="flex items-center space-x-2">
@@ -1091,7 +1092,7 @@ export default function NewInspectionPage() {
                         </div>
                       )}
 
-                      {true && (
+                      {selectedDoor.hasAirTransferGrille && (
                         <div className="space-y-4 border-t pt-4">
                           <h3 className="font-semibold text-lg">Air Transfer Grille</h3>
                           <div className="flex items-center space-x-2">

@@ -41,7 +41,7 @@ export default function NewInspectionPage() {
   const [isLoadingFromQR, setIsLoadingFromQR] = useState(false)
 
   const [formData, setFormData] = useState({
-    doorConstruction: '' as 'STEEL' | 'WOOD' | '',
+    doorConstruction: '' as 'STEEL' | 'WOOD' | 'GLASS' | '',
     certificationProvided: null as boolean | null,
     visualInspectionOk: null as boolean | null,
     visualInspectionComments: '',
@@ -455,9 +455,9 @@ export default function NewInspectionPage() {
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               id="constructionGlass"
-                              checked={formData.doorConstruction === 'WOOD'}
+                              checked={formData.doorConstruction === 'GLASS'}
                               onCheckedChange={(checked) =>
-                                setFormData({ ...formData, doorConstruction: checked ? 'WOOD' : '' })
+                                setFormData({ ...formData, doorConstruction: checked ? 'GLASS' : '' })
                               }
                             />
                             <Label htmlFor="constructionGlass" className="font-normal">

@@ -55,7 +55,7 @@ function validateBuildingRow(row: any, rowNumber: number): { valid: boolean; err
     return { valid: false, error: 'Postcode is required' }
   }
 
-  const validBuildingTypes = ['RESIDENTIAL', 'COMMERCIAL', 'MIXED_USE', 'INDUSTRIAL', 'PUBLIC']
+  const validBuildingTypes = ['RESIDENTIAL', 'COMMERCIAL', 'MIXED_USE', 'INDUSTRIAL', 'PUBLIC', 'HMO', 'HOTEL', 'HOSTEL', 'GUEST_HOUSE', 'EDUCATION', 'CHILDCARE', 'HEALTHCARE', 'CARE_FACILITY', 'TRANSPORT', 'SPECIALITY_ACCOMMODATION', 'ENTERTAINMENT', 'COMMUNITY']
   if (!row.buildingType || !validBuildingTypes.includes(row.buildingType)) {
     return { valid: false, error: `Building type must be one of: ${validBuildingTypes.join(', ')}` }
   }
@@ -96,8 +96,15 @@ function validateFireDoorRow(row: any, rowNumber: number): { valid: boolean; err
     'FLAT_ENTRANCE',
     'COMMUNAL_STAIRWAY',
     'COMMUNAL_CORRIDOR',
+    'COMMUNAL_LOBBY',
+    'PLANT_ROOM',
+    'SERVICE_RISER',
     'RISER_CUPBOARD',
     'METER_CUPBOARD',
+    'KITCHEN',
+    'HALLWAY',
+    'DINING_AREA',
+    'OFFICE',
     'OTHER',
   ]
   if (!row.doorType || !validDoorTypes.includes(row.doorType)) {

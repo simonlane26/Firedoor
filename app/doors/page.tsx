@@ -405,9 +405,9 @@ export default function DoorsPage() {
       if (statusFilter === 'not-inspected') {
         // Doors that need inspection: never inspected OR overdue
         const neverInspected = door.inspections.length === 0
-        const isOverdue = door.inspections.length > 0 &&
+        const isOverdue = !!(door.inspections.length > 0 &&
                          door.inspections[0].nextInspectionDate &&
-                         new Date(door.inspections[0].nextInspectionDate) < new Date()
+                         new Date(door.inspections[0].nextInspectionDate) < new Date())
         matchesStatus = neverInspected || isOverdue
       } else if (statusFilter === 'passed') {
         matchesStatus = door.inspections.length > 0 && door.inspections[0].overallResult === 'PASS'

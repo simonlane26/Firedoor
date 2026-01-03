@@ -5,13 +5,12 @@ import { prisma } from '@/lib/prisma'
 // This clears any local file references that don't exist in production
 export async function POST() {
   try {
-    // Update all tenants to use null branding (will fall back to default logo)
+    // Update all tenants to clear uploaded logo/favicon URLs
+    // Colors will remain at their defaults
     await prisma.tenant.updateMany({
       data: {
         logoUrl: null,
         faviconUrl: null,
-        primaryColor: null,
-        accentColor: null,
       },
     })
 

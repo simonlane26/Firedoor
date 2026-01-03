@@ -194,7 +194,8 @@ export default function NewInspectionPage() {
 
     const minorIssues = [
       selectedDoor?.hasSmokeSeal && !formData.smokeSealsIntact,
-      selectedDoor?.hasLetterbox && !formData.letterboxClosesProperly
+      selectedDoor?.hasLetterbox && !formData.letterboxClosesProperly,
+      formData.doorSignageCorrect === false
     ]
 
     if (minorIssues.some(issue => issue)) {

@@ -7,103 +7,85 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { QrCode, X } from 'lucide-react'
+import { QrCode, X, Camera } from 'lucide-react'
+import { Html5QrcodeScanner } from 'html5-qrcode'
 
 export default function QRScanPage() {
   const router = useRouter()
   const { data: session } = useSession()
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null)
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
-  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     startScanning()
+
     return () => {
       stopScanning()
     }
   }, [])
 
-  async function startScanning() {
-    try {
-      setError('')
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      })
+  function startScanning() {
+    setError('')
+    setSuccess('')
+    setScanning(true)
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream
-        setStream(mediaStream)
-        setScanning(true)
+    // Initialize scanner
+    const scanner = new Html5QrcodeScanner(
+      'qr-reader',
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+        rememberLastUsedCamera: true,
+        showTorchButtonIfSupported: true,
+      },
+      false
+    )
 
-        // Start detecting QR codes
-        detectQRCode()
+    scanner.render(
+      (decodedText) => {
+        // Success callback
+        handleQRCodeDetected(decodedText)
+      },
+      (errorMessage) => {
+        // Error callback - ignore frequent scanning errors
+        // Only log actual errors
       }
-    } catch (err) {
-      setError('Unable to access camera. Please ensure camera permissions are granted.')
-      console.error('Camera error:', err)
-    }
+    )
+
+    scannerRef.current = scanner
   }
 
   function stopScanning() {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-      setStream(null)
+    if (scannerRef.current) {
+      scannerRef.current.clear().catch((err) => {
+        console.error('Error clearing scanner:', err)
+      })
+      scannerRef.current = null
     }
     setScanning(false)
   }
 
-  async function detectQRCode() {
-    if (!videoRef.current || !scanning) return
-
-    try {
-      // Use BarcodeDetector API if available
-      if ('BarcodeDetector' in window) {
-        const barcodeDetector = new (window as any).BarcodeDetector({
-          formats: ['qr_code']
-        })
-
-        const detect = async () => {
-          if (!videoRef.current || !scanning) return
-
-          try {
-            const barcodes = await barcodeDetector.detect(videoRef.current)
-            if (barcodes.length > 0) {
-              const qrData = barcodes[0].rawValue
-              handleQRCodeDetected(qrData)
-              return
-            }
-          } catch (err) {
-            // Continue scanning
-          }
-
-          requestAnimationFrame(detect)
-        }
-
-        detect()
-      } else {
-        setError('QR code scanning not supported on this device. Please use your camera app to scan QR codes.')
-      }
-    } catch (err) {
-      setError('QR code detection failed. Please use your camera app to scan QR codes.')
-    }
-  }
-
   function handleQRCodeDetected(url: string) {
-    stopScanning()
+    setSuccess(`QR Code detected! Redirecting...`)
 
     // Check if it's a door verification URL
     const match = url.match(/\/verify\/([a-zA-Z0-9-]+)/)
     if (match) {
       const doorId = match[1]
+      // Stop scanning before redirect
+      stopScanning()
       // Redirect to verification page
-      router.push(`/verify/${doorId}`)
+      setTimeout(() => {
+        router.push(`/verify/${doorId}`)
+      }, 500)
     } else {
       setError('Invalid QR code. Please scan a fire door QR code.')
       setTimeout(() => {
         setError('')
-        startScanning()
-      }, 2000)
+      }, 3000)
     }
   }
 
@@ -147,59 +129,34 @@ export default function QRScanPage() {
                 </div>
               )}
 
-              <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+              {success && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-sm">
+                  {success}
+                </div>
+              )}
 
-                {scanning && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-64 h-64 border-4 border-white rounded-lg opacity-50"></div>
-                  </div>
-                )}
+              <div id="qr-reader" className="w-full"></div>
 
-                {!scanning && !error && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="text-white text-center">
-                      <QrCode className="h-16 w-16 mx-auto mb-4" />
-                      <p>Initializing camera...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                {scanning ? (
-                  <Button
-                    onClick={stopScanning}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Stop Scanning
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={startScanning}
-                    className="w-full"
-                  >
-                    <QrCode className="h-4 w-4 mr-2" />
-                    Start Scanning
-                  </Button>
-                )}
-              </div>
+              {!scanning && (
+                <div className="text-center py-8">
+                  <Camera className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600">Camera initializing...</p>
+                </div>
+              )}
 
               <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-4">
                 <p className="font-medium mb-2">Tips for scanning:</p>
                 <ul className="list-disc list-inside space-y-1">
+                  <li>Allow camera access when prompted</li>
                   <li>Hold your device steady</li>
-                  <li>Ensure good lighting</li>
-                  <li>Position the QR code within the white frame</li>
-                  <li>Keep the QR code in focus</li>
+                  <li>Ensure good lighting (use torch button if needed)</li>
+                  <li>Position the QR code within the scanning frame</li>
+                  <li>Keep the QR code in focus and not too close</li>
                 </ul>
+              </div>
+
+              <div className="text-xs text-gray-500 text-center">
+                <p>After scanning, you'll be redirected to the door's verification page where you can start the inspection.</p>
               </div>
             </div>
           </CardContent>

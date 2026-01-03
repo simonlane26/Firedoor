@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { doorIds, qrType = 'verification' } = await request.json()
+    const { doorIds } = await request.json()
 
     if (!doorIds || !Array.isArray(doorIds) || doorIds.length === 0) {
       return NextResponse.json({ error: 'Door IDs required' }, { status: 400 })
@@ -42,12 +42,8 @@ export async function POST(request: NextRequest) {
         continue
       }
 
-      // Generate URL based on QR type
-      const url = qrType === 'inspection'
-        ? `${frontendUrl}/inspect/${door.id}`
-        : `${frontendUrl}/verify/${door.id}`
-
-      const verificationUrl = url
+      // Generate verification URL (same for everyone, UI adapts based on auth)
+      const verificationUrl = `${frontendUrl}/verify/${door.id}`
 
       // Generate QR code as data URL
       const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, {

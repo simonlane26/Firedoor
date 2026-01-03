@@ -37,7 +37,6 @@ export default function QRCodesPage() {
   const [generatedQRCodes, setGeneratedQRCodes] = useState<QRCodeData[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const [qrType, setQrType] = useState<'verification' | 'inspection'>('inspection')
 
   useEffect(() => {
     fetchDoors()
@@ -93,7 +92,7 @@ export default function QRCodesPage() {
       const response = await fetch('/api/qr-codes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doorIds: Array.from(selectedDoors), qrType }),
+        body: JSON.stringify({ doorIds: Array.from(selectedDoors) }),
       })
 
       if (!response.ok) {
@@ -189,7 +188,7 @@ export default function QRCodesPage() {
             <div class="qr-container${(index + 1) % 4 === 0 ? ' page-break' : ''}">
               <img src="${qrCode.qrCodeDataUrl}" alt="QR Code for Door ${qrCode.doorNumber}" />
               <div class="door-info">Door ${qrCode.doorNumber}</div>
-              <div class="scan-instruction">${qrType === 'inspection' ? 'Scan to start inspection (login required)' : 'Scan to view inspection status'}</div>
+              <div class="scan-instruction">Scan to view door status or start inspection</div>
             </div>
           `
             )
@@ -239,7 +238,7 @@ export default function QRCodesPage() {
       <div className="container mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">QR Code Management</h1>
-          <p className="text-slate-600">Generate QR codes for inspectors to start inspections or for building users to verify compliance</p>
+          <p className="text-slate-600">Generate QR codes for fire doors. Inspectors can scan to start inspections, building users can scan to check compliance status.</p>
         </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -254,42 +253,6 @@ export default function QRCodesPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="space-y-3 pb-4 border-b">
-                <label className="text-sm font-medium">QR Code Type</label>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="inspection"
-                      name="qrType"
-                      value="inspection"
-                      checked={qrType === 'inspection'}
-                      onChange={(e) => setQrType(e.target.value as 'inspection')}
-                      className="w-4 h-4 text-red-600"
-                    />
-                    <label htmlFor="inspection" className="text-sm cursor-pointer">
-                      <span className="font-medium">Inspector QR Codes</span>
-                      <span className="text-gray-600 block text-xs">Inspectors scan to start inspection (requires login)</span>
-                    </label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="verification"
-                      name="qrType"
-                      value="verification"
-                      checked={qrType === 'verification'}
-                      onChange={(e) => setQrType(e.target.value as 'verification')}
-                      className="w-4 h-4 text-red-600"
-                    />
-                    <label htmlFor="verification" className="text-sm cursor-pointer">
-                      <span className="font-medium">Verification QR Codes</span>
-                      <span className="text-gray-600 block text-xs">Building users scan to check compliance status (public)</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
               <div className="flex gap-2">
                 <Button onClick={selectAll} variant="outline" size="sm">
                   Select All
@@ -337,7 +300,7 @@ export default function QRCodesPage() {
                 disabled={selectedDoors.size === 0 || generating}
                 className="w-full"
               >
-                {generating ? 'Generating...' : `Generate ${qrType === 'inspection' ? 'Inspector' : 'Verification'} QR Codes (${selectedDoors.size})`}
+                {generating ? 'Generating...' : `Generate QR Codes (${selectedDoors.size})`}
               </Button>
             </div>
           </CardContent>

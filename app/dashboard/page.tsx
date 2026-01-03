@@ -170,12 +170,12 @@ export default async function DashboardPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-1 mb-1">
                 <CardDescription className="text-purple-800">Pending</CardDescription>
-                <HelpTooltip content="Inspections scheduled but not yet completed. Start inspecting to ensure compliance." />
+                <HelpTooltip content="Doors that have never been inspected or have overdue inspections. Start inspecting to ensure compliance." />
               </div>
               <CardTitle className="text-3xl font-bold text-purple-900">{data.pendingInspections}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Link href="/inspections?status=pending">
+              <Link href="/doors?status=not-inspected">
                 <Button variant="link" className="p-0 h-auto text-purple-700">
                   Start inspecting →
                 </Button>

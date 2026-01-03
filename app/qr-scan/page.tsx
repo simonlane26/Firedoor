@@ -17,11 +17,20 @@ export default function QRScanPage() {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const mountedRef = useRef(false)
 
   useEffect(() => {
-    startScanning()
+    // Prevent double mounting in dev mode
+    if (mountedRef.current) return
+    mountedRef.current = true
+
+    // Delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      startScanning()
+    }, 100)
 
     return () => {
+      clearTimeout(timer)
       stopScanning()
     }
   }, [])
@@ -29,33 +38,40 @@ export default function QRScanPage() {
   function startScanning() {
     setError('')
     setSuccess('')
-    setScanning(true)
 
-    // Initialize scanner
+    // Initialize scanner with verbose logging
     const scanner = new Html5QrcodeScanner(
       'qr-reader',
       {
         fps: 10,
         qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
+        aspectRatio: 1.777778,  // 16:9 aspect ratio
         rememberLastUsedCamera: true,
         showTorchButtonIfSupported: true,
+        videoConstraints: {
+          facingMode: { ideal: "environment" }  // Prefer rear camera
+        }
       },
-      false
+      true  // Enable verbose logging
     )
 
-    scanner.render(
-      (decodedText) => {
-        // Success callback
-        handleQRCodeDetected(decodedText)
-      },
-      (errorMessage) => {
-        // Error callback - ignore frequent scanning errors
-        // Only log actual errors
-      }
-    )
-
-    scannerRef.current = scanner
+    try {
+      scanner.render(
+        (decodedText) => {
+          // Success callback
+          handleQRCodeDetected(decodedText)
+        },
+        (errorMessage) => {
+          // Error callback - ignore frequent scanning errors
+          // Only log actual errors
+        }
+      )
+      setScanning(true)
+      scannerRef.current = scanner
+    } catch (err: any) {
+      setError(`Failed to start camera: ${err.message || 'Unknown error'}. Please ensure camera permissions are granted.`)
+      console.error('Scanner initialization error:', err)
+    }
   }
 
   function stopScanning() {

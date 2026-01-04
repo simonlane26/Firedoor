@@ -23,6 +23,7 @@ import {
   DoorOpen,
   ClipboardCheck,
   QrCode,
+  Shield,
 } from 'lucide-react'
 
 interface DocSection {
@@ -144,6 +145,7 @@ const quickLinks = [
   { title: 'QR Codes', href: '/qr-codes', icon: QrCode, color: 'text-indigo-600' },
   { title: 'Reports', href: '/reports', icon: BarChart3, color: 'text-red-600' },
   { title: 'CSV Import/Export', href: '/csv', icon: Upload, color: 'text-teal-600' },
+  { title: 'Golden Thread Compliance', href: '/golden-thread', icon: Shield, color: 'text-emerald-600' },
   { title: 'Settings', href: '/settings/tenant', icon: Settings, color: 'text-gray-600' },
 ]
 

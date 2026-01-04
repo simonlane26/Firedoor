@@ -26,9 +26,9 @@ async function updateUserRoles() {
       const exists = currentValues.some(v => v.enumlabel === value)
       if (!exists) {
         console.log(`Adding enum value: ${value}`)
-        await prisma.$executeRaw`
-          ALTER TYPE "UserRole" ADD VALUE ${value}
-        `
+        await prisma.$executeRawUnsafe(
+          `ALTER TYPE "UserRole" ADD VALUE '${value}'`
+        )
       } else {
         console.log(`✓ Enum value ${value} already exists`)
       }

@@ -20,10 +20,9 @@ async function addTrialColumn() {
     }
 
     // Add the column
-    await prisma.$executeRaw`
-      ALTER TABLE tenants
-      ADD COLUMN "trialEndsAt" TIMESTAMP(3)
-    `
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE tenants ADD COLUMN "trialEndsAt" TIMESTAMP(3)`
+    )
 
     console.log('✓ Successfully added trialEndsAt column')
 

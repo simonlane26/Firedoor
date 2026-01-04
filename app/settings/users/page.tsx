@@ -82,10 +82,16 @@ export default function UsersPage() {
 
   const getRoleBadge = (role: string) => {
     if (role === 'ADMIN') {
-      return <Badge className="bg-red-600">Admin</Badge>
+      return <Badge className="bg-red-600">Administrator</Badge>
     }
-    if (role === 'MANAGER') {
-      return <Badge className="bg-blue-600">Manager</Badge>
+    if (role === 'MANAGER_RESPONSIBLE_PERSON' || role === 'MANAGER') {
+      return <Badge className="bg-blue-600">Manager / Responsible Person</Badge>
+    }
+    if (role === 'HOUSING_OFFICER') {
+      return <Badge className="bg-green-600">Housing Officer</Badge>
+    }
+    if (role === 'AUDITOR') {
+      return <Badge className="bg-purple-600">Auditor</Badge>
     }
     return <Badge className="bg-slate-600">Inspector</Badge>
   }

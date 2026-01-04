@@ -236,13 +236,18 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
                   required
                 >
                   <option value="INSPECTOR">Inspector</option>
-                  <option value="MANAGER">Manager</option>
+                  <option value="MANAGER_RESPONSIBLE_PERSON">Manager / Responsible Person</option>
+                  <option value="MANAGER">Manager / Responsible Person (Legacy)</option>
+                  <option value="HOUSING_OFFICER">Housing Officer</option>
+                  <option value="AUDITOR">Auditor</option>
                   <option value="ADMIN">Administrator</option>
                 </select>
                 <p className="text-xs text-slate-500 mt-1">
                   {formData.role === 'ADMIN' && 'Full system access including user management and settings'}
-                  {formData.role === 'MANAGER' && 'Can manage buildings, doors, inspections, and import/export data'}
-                  {formData.role === 'INSPECTOR' && 'Can record inspections and view assigned doors'}
+                  {(formData.role === 'MANAGER_RESPONSIBLE_PERSON' || formData.role === 'MANAGER') && 'Building portfolio management, compliance oversight, and reporting'}
+                  {formData.role === 'HOUSING_OFFICER' && 'Building operations, defect management, and contractor coordination'}
+                  {formData.role === 'INSPECTOR' && 'Conduct fire door inspections and record findings'}
+                  {formData.role === 'AUDITOR' && 'Read-only access to all records for compliance auditing'}
                 </p>
               </div>
 

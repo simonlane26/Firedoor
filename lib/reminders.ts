@@ -67,7 +67,8 @@ export async function sendInspectionReminders(daysThreshold: number): Promise<Re
           where: {
             OR: [
               { role: 'ADMIN' },
-              { role: 'MANAGER' }
+              { role: 'MANAGER_RESPONSIBLE_PERSON' },
+              { role: 'HOUSING_OFFICER' }
             ]
           },
           select: {

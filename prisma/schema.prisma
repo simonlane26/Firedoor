@@ -98,8 +98,10 @@ model User {
 
 enum UserRole {
   ADMIN
-  MANAGER
+  MANAGER_RESPONSIBLE_PERSON
+  HOUSING_OFFICER
   INSPECTOR
+  AUDITOR
 }
 
 model Building {

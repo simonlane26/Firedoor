@@ -482,7 +482,7 @@ export default function GoldenThreadPage() {
                     Start Free Trial
                   </Button>
                 </Link>
-                <Link href="/contact">
+                <Link href="mailto:sales@firedoorchecks.com?subject=Golden Thread Compliance Inquiry">
                   <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-blue-700">
                     Contact Sales
                   </Button>

@@ -38,6 +38,7 @@ model Tenant {
   // Subscription
   subscriptionPlan  String    @default("trial")
   subscriptionStatus String   @default("active")
+  trialEndsAt       DateTime? // When the trial expires (null for paid accounts)
   maxDoors          Int       @default(1000)
   maxBuildings      Int       @default(50)
   maxUsers          Int       @default(10)

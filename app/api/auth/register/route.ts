@@ -76,12 +76,19 @@ export async function POST(request: NextRequest) {
 
     // Create tenant and user in a transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Calculate trial end date (14 days from now)
+      const trialEndsAt = new Date()
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14)
+
       // Create tenant (organization)
       const tenant = await tx.tenant.create({
         data: {
           companyName,
           subdomain,
-          address: address || null
+          address: address || null,
+          subscriptionPlan: 'trial',
+          subscriptionStatus: 'active',
+          trialEndsAt
         }
       })
 

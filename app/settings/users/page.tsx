@@ -250,16 +250,25 @@ export default function UsersPage() {
               <div className="flex-1">
                 <div className="font-semibold mb-1">Administrator</div>
                 <div className="text-sm text-slate-600">
-                  Full system access including user management, tenant settings, branding, and all data operations
+                  Full system access, user management, and tenant settings
                 </div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Badge className="bg-blue-600 mt-1">Manager</Badge>
+              <Badge className="bg-blue-600 mt-1">Manager / RP</Badge>
               <div className="flex-1">
-                <div className="font-semibold mb-1">Manager</div>
+                <div className="font-semibold mb-1">Manager / Responsible Person</div>
                 <div className="text-sm text-slate-600">
-                  Can manage buildings, doors, inspections, and reports. Can import/export data. Cannot modify settings or manage users.
+                  Building portfolio management, compliance oversight, and reporting
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge className="bg-green-600 mt-1">Housing Officer</Badge>
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Housing Officer</div>
+                <div className="text-sm text-slate-600">
+                  Building operations, defect management, and contractor coordination
                 </div>
               </div>
             </div>
@@ -268,7 +277,16 @@ export default function UsersPage() {
               <div className="flex-1">
                 <div className="font-semibold mb-1">Inspector</div>
                 <div className="text-sm text-slate-600">
-                  Can record inspections and view assigned doors. Can export data. Cannot import data or modify settings.
+                  Conduct fire door inspections and record findings
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Badge className="bg-purple-600 mt-1">Auditor</Badge>
+              <div className="flex-1">
+                <div className="font-semibold mb-1">Auditor</div>
+                <div className="text-sm text-slate-600">
+                  Read-only access to all records for compliance auditing
                 </div>
               </div>
             </div>
